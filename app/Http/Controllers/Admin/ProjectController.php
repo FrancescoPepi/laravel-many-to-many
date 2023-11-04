@@ -7,9 +7,11 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Support\Str;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class ProjectController extends Controller
 {
@@ -32,8 +34,10 @@ class ProjectController extends Controller
      */
     public function create()
     {
+        $project = new Project;
+        $tags = Tag::orderBy('label')->get();
         $categories = Category::all();
-        return view("admin.projects.create", compact("categories"));
+        return view("admin.projects.create", compact("categories", "project", "tags"));
     }
 
     /**
@@ -49,6 +53,9 @@ class ProjectController extends Controller
         $project->fill($data);
         $project->slug = Str::slug($project->name);
         $project->save();
+
+        if (Arr::exists($data, "tags"))
+            $project->tags()->attach($data["tags"]);
         return redirect()->route("admin.projects.index");
     }
 
@@ -71,8 +78,10 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        $tags = Tag::orderBy('label')->get();
+        $project_tags = $project->tags->pluck('id')->toArray();
         $categories = Category::all();
-        return view("admin.projects.edit", compact("project", "categories"));
+        return view("admin.projects.edit", compact("project", "categories", "tags", "project_tags"));
     }
 
     /**
@@ -85,9 +94,14 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, Project $project)
     {
         $data = $request->validated();
-        $project->fill($data);
+        $project->update($data);
         $project->slug = Str::slug($project->name);
+        if (Arr::exists($data, "tags"))
+            $project->tags()->sync($data["tags"]);
+        else
+            $project->tags()->detach();
         $project->save();
+
         return redirect()->route("admin.projects.show", $project);
     }
 
@@ -99,6 +113,7 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        $project->tags()->detach();
         $project->delete();
         return redirect()->route("admin.projects.index");
     }

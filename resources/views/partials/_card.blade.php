@@ -18,6 +18,18 @@
                 <strong>Slug del Progetto: </strong>
                 {{ $project->slug }}
             </div>
+            <div class="col">
+                <strong>Tags:</strong>
+                @forelse ($project->tags as $tag)
+                    {{ $tag->label }} @unless ($loop->last)
+                        ,
+                    @else
+                        .
+                    @endunless
+                @empty
+                    Nessun tag associato
+                @endforelse
+            </div>
             <div class="col-12 mt-2">
                 <strong>Descrizione: </strong>
                 {{ $project->description }}

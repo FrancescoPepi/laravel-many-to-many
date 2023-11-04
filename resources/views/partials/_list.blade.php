@@ -6,6 +6,7 @@
             <th scope="col">Nome Progetto</th>
             <th scope="col">Categoria</th>
             <th scope="col">Descrizione</th>
+            <th scope="col">Tag</th>
             <th scope="col">Data Creazione</th>
             <th scope="col">Ultima Modifica</th>
             <th scope="col">Admin Mode</th>
@@ -19,6 +20,17 @@
                 <td scope="col">{{ $project->name }}</td>
                 <td scope="col">{{ $project->category?->label }}</td>
                 <td scope="col">{{ mb_strimwidth($project->description, 0, 50, '...') }}</td>
+                <td>
+                    @forelse($project->tags as $tag)
+                        {{ $tag->label }} @unless ($loop->last)
+                            ,
+                        @else
+                            .
+                        @endunless
+                    @empty
+                        -
+                    @endforelse
+                </td>
                 <td scope="col">{{ $project->created_at }}</td>
                 <td scope="col">{{ $project->updated_at }}</td>
                 <td scope="col">
